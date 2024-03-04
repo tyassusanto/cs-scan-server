@@ -7,9 +7,9 @@ const cors = require('cors')
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => {
-    res.send('Hello World!')
-})
+const authRoute = require('./src/routes/auth')
+
+app.use('/auth', authRoute)
 
 const port = process.env.SERVER_PORT
 
