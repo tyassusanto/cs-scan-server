@@ -5,6 +5,7 @@ const createError = require('http-errors');
 const common = require('../common/response')
 
 const modelUsers = require('../models/users')
+const modelAuth  = require('../models/auth')
 
 const login = async (req, res, next) => {
     try {
@@ -39,6 +40,33 @@ const login = async (req, res, next) => {
     }
 }
 
+const register = async (req, res, next) => {
+    try {
+        const { username, role_id, password } = req.body
+        const userUsername = await modelUsers.findUsername(username)
+        if (userUsername.length > 0) {
+            return next(createError(403, 'Username sudah terpakai'))
+        }
+        const hashPassword = await bcrypt.hash(password, 10);
+        const userData = {
+            // sesuai dengan field database
+            user_id: uuid(),
+            username,
+            password: hashPassword,
+            role_id
+        }
+        const resultRegister = await modelAuth.register(userData)
+        common.response(res, userData.username, 201, `Akun berhasil dibuat dengan username, ${username}`)
+    } catch (error) {
+        res.status(500),
+            next({
+                status: 500,
+                message: 'Internal Server Error'
+            })
+    }
+}
+
 module.exports = {
-    login
+    login,
+    register
 }
